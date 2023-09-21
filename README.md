@@ -2,7 +2,7 @@
 
 ***Take the Police Training to another Level***
 
-Hello Guys, today im Releasing my new Script "Police Training". I hope you Guys enjoy it. If you have any Suggestions or Feedback, feel free to DM me or writing it down.
+Hello Guys, today im Releasing my new Script and Map "Police Training". I hope you Guys enjoy it. If you have any Suggestions or Feedback, feel free to DM me or writing it down.
 
 [__preview__](https://www.youtube.com/watch?v=-MVimL78LIQ)
 
