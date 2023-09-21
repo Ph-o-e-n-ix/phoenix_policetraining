@@ -4,10 +4,15 @@ Config.Debug = false -- if true you can cancel the mission with "/cancel"
 
 Config.Translation = "en" -- "de" or "en"
 
-Config.useNewESX = true 
+Config.Framework = 'ESX' -- "ESX" , "QB"
+--IMPORTANT -> For QB Core you need to uncomment the es_extended line in the fxmanifest.lua
+--Special Thanks to JimGordon for the QB Support[https://github.com/jimgordon20/]
+
+Config.useNewESX = true -- You can ignore this if you use QB Core
 
 Config.Notification = function(text, time)
     ESX.ShowNotification(text, time) -- You can setup your own Notification Script, just paste your export notification and replace text and time variable
+    --QBCore.Functions.Notify(text, "success", time)
 end
 
 Config.EnableBlip = false -- If you want to enable blips for the Enemies
