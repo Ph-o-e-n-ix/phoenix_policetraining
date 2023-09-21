@@ -1,12 +1,18 @@
-if Config.useNewESX then
-    ESX = exports["es_extended"]:getSharedObject()
-else 
-    Citizen.CreateThread(function()
-        while ESX == nil do
-            TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
-            Citizen.Wait(0)
-        end
-    end)
+
+if Config.Framework == 'ESX' then
+    if Config.useNewESX then
+        ESX = exports["es_extended"]:getSharedObject()
+    else 
+        Citizen.CreateThread(function()
+            while ESX == nil do
+                TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
+                Citizen.Wait(0)
+            end
+        end)
+    end
+end  
+if Config.Framework == 'QB' then
+    QBCore = exports['qb-core']:GetCoreObject()
 end
 
 local inmission = false
@@ -18,21 +24,63 @@ AddEventHandler('onClientResourceStart', function(ressourceName)
     print("" ..ressourceName.." started sucessfully")
 end)
 
-RegisterNetEvent('esx:playerLoaded')
-AddEventHandler('esx:playerLoaded', function(xPlayer)
-	PlayerData = xPlayer
-end)
+if Config.Framework == 'ESX' then
+    RegisterNetEvent('esx:playerLoaded')
+    AddEventHandler('esx:playerLoaded', function(xPlayer)
+        PlayerData = xPlayer
+    end)
 
-RegisterNetEvent('esx:setJob')
-AddEventHandler('esx:setJob', function(job)
-  PlayerData.job = job
-end)
+    RegisterNetEvent('esx:setJob')
+    AddEventHandler('esx:setJob', function(job)
+    PlayerData.job = job
+    end)
+end
+
+if Config.Framework == 'QB' then
+    RegisterNetEvent('qb-core:client:OnPlayerLoaded')
+    AddEventHandler('qb-core:client:OnPlayerLoaded', function()
+        PlayerData = QBCore.Functions.GetPlayerData()
+    end)
+    
+    RegisterNetEvent('qb-core:client:setJob')
+    AddEventHandler('qb-core:client:setJob', function(job)
+        PlayerData.job = job
+    end)
+end
 
 if Config.Command.enable then
     RegisterCommand(Config.Command.commandname, function()
         if Config.requiredJob.enable then 
             if ESX.PlayerData.job.name == Config.requiredJob.jobname then 
                 if not inmission then
+                    if Config.Framework == 'ESX' then
+                        ESX.TriggerServerCallback('inmissionserver', function(cb) 
+                            if cb then
+                                startmission()
+                                TriggerServerEvent("phoenix:starttraining")
+                            else 
+                                Config.Notification(Translation[Config.Translation]["someone_already_started"])
+                            end
+                        end)
+                    else 
+                        QBCore.Functions.TriggerCallback('inmissionserver', function(cb) 
+                            if cb then
+                                startmission()
+                                TriggerServerEvent("phoenix:starttraining")
+                            else 
+                                Config.Notification(Translation[Config.Translation]["someone_already_started"])
+                            end
+                        end)
+                    end
+                else 
+                    Config.Notification(Translation[Config.Translation]["already_started"])
+                end
+            else 
+                Config.Notification(Translation[Config.Translation]["not_right_job"])
+            end
+        else
+            if not inmission then
+                if Config.Framework == 'ESX' then
                     ESX.TriggerServerCallback('inmissionserver', function(cb) 
                         if cb then
                             startmission()
@@ -42,21 +90,15 @@ if Config.Command.enable then
                         end
                     end)
                 else 
-                    Config.Notification(Translation[Config.Translation]["already_started"])
+                    QBCore.Functions.TriggerCallback('inmissionserver', function(cb) 
+                        if cb then
+                            startmission()
+                            TriggerServerEvent("phoenix:starttraining")
+                        else 
+                            Config.Notification(Translation[Config.Translation]["someone_already_started"])
+                        end
+                    end)
                 end
-            else 
-                Config.Notification(Translation[Config.Translation]["not_right_job"])
-            end
-        else
-            if not inmission then
-                ESX.TriggerServerCallback('inmissionserver', function(cb) 
-                    if cb then
-                        startmission()
-                        TriggerServerEvent("phoenix:starttraining")
-                    else 
-                        Config.Notification(Translation[Config.Translation]["someone_already_started"])
-                    end
-                end)
             else 
                 Config.Notification(Translation[Config.Translation]["already_started"])
             end
@@ -69,6 +111,34 @@ AddEventHandler("phoenix:startmission", function()
     if Config.requiredJob.enable then 
         if ESX.PlayerData.job.name == Config.requiredJob.jobname then 
             if not inmission then
+                if Config.Framework == 'ESX' then
+                    ESX.TriggerServerCallback('inmissionserver', function(cb) 
+                        if cb then
+                            startmission()
+                            TriggerServerEvent("phoenix:starttraining")
+                        else 
+                            Config.Notification(Translation[Config.Translation]["someone_already_started"])
+                        end
+                    end)
+                else 
+                    QBCore.Functions.TriggerCallback('inmissionserver', function(cb) 
+                        if cb then
+                            startmission()
+                            TriggerServerEvent("phoenix:starttraining")
+                        else 
+                            Config.Notification(Translation[Config.Translation]["someone_already_started"])
+                        end
+                    end)
+                end
+            else 
+                Config.Notification(Translation[Config.Translation]["already_started"])
+            end
+        else 
+            Config.Notification(Translation[Config.Translation]["not_right_job"])
+        end
+    else
+        if not inmission then
+            if Config.Framework == 'ESX' then
                 ESX.TriggerServerCallback('inmissionserver', function(cb) 
                     if cb then
                         startmission()
@@ -78,21 +148,15 @@ AddEventHandler("phoenix:startmission", function()
                     end
                 end)
             else 
-                Config.Notification(Translation[Config.Translation]["already_started"])
+                QBCore.Functions.TriggerCallback('inmissionserver', function(cb) 
+                    if cb then
+                        startmission()
+                        TriggerServerEvent("phoenix:starttraining")
+                    else 
+                        Config.Notification(Translation[Config.Translation]["someone_already_started"])
+                    end
+                end)
             end
-        else 
-            Config.Notification(Translation[Config.Translation]["not_right_job"])
-        end
-    else
-        if not inmission then
-            ESX.TriggerServerCallback('inmissionserver', function(cb) 
-                if cb then
-                    startmission()
-                    TriggerServerEvent("phoenix:starttraining")
-                else 
-                    Config.Notification(Translation[Config.Translation]["someone_already_started"])
-                end
-            end)
         else 
             Config.Notification(Translation[Config.Translation]["already_started"])
         end
@@ -115,14 +179,25 @@ if Config.Coords.enable then
                     end
                     if IsControlJustReleased(0, 38) then
                         if not inmission then 
-                            ESX.TriggerServerCallback('inmissionserver', function(cb) 
-                                if cb then
-                                    startmission()
-                                    TriggerServerEvent("phoenix:starttraining")
-                                else 
-                                    Config.Notification(Translation[Config.Translation]["someone_already_started"])
-                                end
-                            end)
+                            if Config.Framework == 'ESX' then
+                                ESX.TriggerServerCallback('inmissionserver', function(cb) 
+                                    if cb then
+                                        startmission()
+                                        TriggerServerEvent("phoenix:starttraining")
+                                    else 
+                                        Config.Notification(Translation[Config.Translation]["someone_already_started"])
+                                    end
+                                end)
+                            else 
+                                QBCore.Functions.TriggerCallback('inmissionserver', function(cb) 
+                                    if cb then
+                                        startmission()
+                                        TriggerServerEvent("phoenix:starttraining")
+                                    else 
+                                        Config.Notification(Translation[Config.Translation]["someone_already_started"])
+                                    end
+                                end)
+                            end
                         else 
                             Config.Notification(Translation[Config.Translation]["already_started"])
                         end
