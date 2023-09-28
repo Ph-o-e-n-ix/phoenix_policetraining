@@ -87,6 +87,35 @@ Config.Pedname5coords = {
     {x = -2024.4708,  y = 3206.9324,  z = 38.0013, h = 324.2229},
 }
 
+
+
+Config.UseHostagePeds = true
+
+Config.Pednamehostage1 = "cs_andreas"
+Config.Pednamehostage1coords = {
+    {x = -2010.8058,  y = 3207.6309,  z = 32.8102, h = 150.6501},
+    {x = -2025.8547,  y = 3198.5039,  z = 32.8105, h = 237.8466},
+    {x = -1998.4739,  y = 3214.4351,  z = 32.8103, h = 18.4048},
+    {x = -2004.3707,  y = 3235.8281,  z = 32.8102, h = 128.1694},
+}
+
+Config.Pednamehostage2 = "mp_f_boatstaff_01"
+Config.Pednamehostage2coords = { 
+    {x = -1974.7866,  y = 3188.6563,  z = 38.0014, h = 137.4261},
+    {x = -1970.4963,  y = 3207.1379,  z = 38.0401, h = 166.6918},
+    {x = -1985.3978,  y = 3173.3806,  z = 38.0014, h = 170.7296},
+    {x = -1979.7488,  y = 3165.6909,  z = 38.0014, h =81.4993},
+}
+
+Config.Pednamehostage3 = "ig_chrisformage"
+Config.Pednamehostage3coords = { 
+    {x = -2010.9626,  y = 3186.5999,  z = 38.0014, h = 60.5957},
+    {x = -2023.1929,  y = 3209.3369,  z = 38.0014, h = 326.0790},
+    {x = -1996.3296,  y = 3183.9968,  z = 38.0014, h = 34.8396},
+    {x = -1996.7281,  y = 3194.5981,  z = 38.0014, h = 57.2371},
+}
+
+
 Translation = {
     ['de'] = {
         ["started_mission"] = 'Das Training hat begonnen',
