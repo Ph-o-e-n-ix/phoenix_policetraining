@@ -469,7 +469,7 @@ Citizen.CreateThread(function()
                 endmission(false)
             end
             if Config.UseHostagePeds then
-                if IsEntityDead(pedh1) or IsEntityDead(pedh2) or IsEntityDead(pedh2) then
+                if IsEntityDead(pedh1) or IsEntityDead(pedh2) or IsEntityDead(pedh3) then
                     inmission = false
                     DeleteEntity(pedh1)
                     DeleteEntity(pedh2)
@@ -488,17 +488,11 @@ function endmission(cancel)
         DeleteEntity(ped3)
         DeleteEntity(ped4)
         DeleteEntity(ped5)
-	DeleteEntity(pedh1)
-        DeleteEntity(pedh2)
-        DeleteEntity(pedh3)
         inmission = false  
         Config.Notification(Translation[Config.Translation]["mission_success"])
         TriggerServerEvent("phoenix:starttraining")
         TriggerServerEvent("phoenix:getreward")
     else 
-	DeleteEntity(pedh1)
-        DeleteEntity(pedh2)
-        DeleteEntity(pedh3)
         DeleteEntity(ped1)
         DeleteEntity(ped2)
         DeleteEntity(ped3)
