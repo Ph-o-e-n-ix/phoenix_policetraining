@@ -214,6 +214,26 @@ function startmission()
     local results3 = Config.Pedname3coords[math.random(#Config.Pedname3coords)]
     local results4 = Config.Pedname4coords[math.random(#Config.Pedname4coords)]
     local results5 = Config.Pedname5coords[math.random(#Config.Pedname5coords)]
+    if Config.UseHostagePeds then 
+        resulth1 = Config.Pednamehostage1coords[math.random(#Config.Pednamehostage1coords)]
+        resulth2 = Config.Pednamehostage2coords[math.random(#Config.Pednamehostage2coords)]
+        resulth3 = Config.Pednamehostage3coords[math.random(#Config.Pednamehostage3coords)]
+        hashh1 = GetHashKey(Config.Pednamehostage1)
+        while not HasModelLoaded(hashh1) do
+            RequestModel(hashh1)
+            Wait(20)
+        end
+        hashh2 = GetHashKey(Config.Pednamehostage2)
+        while not HasModelLoaded(hashh2) do
+            RequestModel(hashh2)
+            Wait(20)
+        end
+        hashh3 = GetHashKey(Config.Pednamehostage3)
+        while not HasModelLoaded(hashh3) do
+            RequestModel(hashh3)
+            Wait(20)
+        end
+    end
     local PlayerPed = PlayerPedId()
     local hash1 = GetHashKey(Config.Pedname1)
     while not HasModelLoaded(hash1) do
@@ -239,6 +259,14 @@ function startmission()
     while not HasModelLoaded(hash5) do
         RequestModel(hash5)
         Wait(20)
+    end
+    if Config.UseHostagePeds then
+        pedh1 = CreatePed(4, hashh1, resulth1.x, resulth1.y, resulth1.z, resulth1.h, true, false)
+        pedh2 = CreatePed(4, hashh2, resulth2.x, resulth2.y, resulth2.z, resulth2.h, true, false)
+        pedh3 = CreatePed(4, hashh3, resulth3.x, resulth3.y, resulth3.z, resulth3.h, true, false)
+        SetBlockingOfNonTemporaryEvents(pedh1, true)
+        SetBlockingOfNonTemporaryEvents(pedh2, true)
+        SetBlockingOfNonTemporaryEvents(pedh3, true)
     end
     ped1 = CreatePed(4, hash1, results1.x, results1.y, results1.z, results1.h, true, false)
     ped2 = CreatePed(4, hash2, results2.x, results2.y, results2.z, results2.h, true, false)
@@ -279,6 +307,36 @@ function startmission()
     NetworkSetNetworkIdDynamic(netID5, false)
     SetNetworkIdCanMigrate(netID5, true)
     SetNetworkIdExistsOnAllMachines(netID5, true)
+    if Config.UseHostagePeds then
+        SetEntityAsMissionEntity(pedh1, true, true)
+        NetworkRegisterEntityAsNetworked(pedh1)
+        local netpedh1 = PedToNet(pedh1)
+        NetworkSetNetworkIdDynamic(netpedh1, false)
+        SetNetworkIdCanMigrate(netpedh1, true)
+        SetNetworkIdExistsOnAllMachines(netpedh1, true)
+
+        SetEntityAsMissionEntity(pedh2, true, true)
+        NetworkRegisterEntityAsNetworked(pedh2)
+        local netpedh2 = PedToNet(pedh2)
+        NetworkSetNetworkIdDynamic(netpedh2, false)
+        SetNetworkIdCanMigrate(netpedh2, true)
+        SetNetworkIdExistsOnAllMachines(netpedh2, true)
+
+        SetEntityAsMissionEntity(pedh3, true, true)
+        NetworkRegisterEntityAsNetworked(pedh3)
+        local netpedh3 = PedToNet(pedh3)
+        NetworkSetNetworkIdDynamic(netpedh3, false)
+        SetNetworkIdCanMigrate(netpedh3, true)
+        SetNetworkIdExistsOnAllMachines(netpedh3, true)
+
+        RequestAnimDict("random@arrests@busted")
+        while not HasAnimDictLoaded("random@arrests@busted") do 
+            Citizen.Wait(25)
+        end  
+        TaskPlayAnim(pedh1, 'random@arrests@busted', 'idle_a', 1.0, -1, -1, 3, 0, false, false, false)
+        TaskPlayAnim(pedh2, 'random@arrests@busted', 'idle_a', 1.0, -1, -1, 3, 0, false, false, false)
+        TaskPlayAnim(pedh3, 'random@arrests@busted', 'idle_a', 1.0, -1, -1, 3, 0, false, false, false)
+    end
 
     
 
@@ -300,6 +358,7 @@ function startmission()
     SetPedCombatAbility(ped3, 100)
     SetPedCombatAbility(ped4, 100)
     SetPedCombatAbility(ped5, 100)
+
 
     Config.Notification(Translation[Config.Translation]["started_mission"])
     inmission = true
@@ -409,6 +468,15 @@ Citizen.CreateThread(function()
             if IsEntityDead(ped1) and IsEntityDead(ped2) and IsEntityDead(ped3) and IsEntityDead(ped4) and IsEntityDead(ped5) and inmission then 
                 endmission(false)
             end
+            if Config.UseHostagePeds then
+                if IsEntityDead(pedh1) or IsEntityDead(pedh2) or IsEntityDead(pedh2) then
+                    inmission = false
+                    DeleteEntity(pedh1)
+                    DeleteEntity(pedh2)
+                    DeleteEntity(pedh3)
+                    endmission(true)
+                end
+            end
         end
     end
 end)
@@ -420,11 +488,17 @@ function endmission(cancel)
         DeleteEntity(ped3)
         DeleteEntity(ped4)
         DeleteEntity(ped5)
+	DeleteEntity(pedh1)
+        DeleteEntity(pedh2)
+        DeleteEntity(pedh3)
         inmission = false  
         Config.Notification(Translation[Config.Translation]["mission_success"])
         TriggerServerEvent("phoenix:starttraining")
         TriggerServerEvent("phoenix:getreward")
     else 
+	DeleteEntity(pedh1)
+        DeleteEntity(pedh2)
+        DeleteEntity(pedh3)
         DeleteEntity(ped1)
         DeleteEntity(ped2)
         DeleteEntity(ped3)
@@ -481,7 +555,9 @@ AddEventHandler('onResourceStop', function()
     DeleteEntity(ped3)
     DeleteEntity(ped4)
     DeleteEntity(ped5)
+    if Config.UseHostagePeds then
+        DeleteEntity(pedh1)
+        DeleteEntity(pedh2)
+        DeleteEntity(pedh3)
+    end
 end)
-
-
-
