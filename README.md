@@ -16,6 +16,7 @@ __Features__ :zap:<br>
 ・Setup Custom Rewards [Item & Money]<br>
 ・Set Up your custom Notification<br>
 ・Toggle Blip for Enemies to train easier<br>
+・Hostages Peds for making the Mission more interesting<br>
 ・Toggle Function to start Training<br>
 -> via Commands / Items / Coords<br>
 ・Toggle "Required Job" <br>
