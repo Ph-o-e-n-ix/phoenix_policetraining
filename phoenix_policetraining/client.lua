@@ -16,6 +16,7 @@ if Config.Framework == 'QB' then
 end
 
 local inmission = false
+local rescue = 0
 
 AddEventHandler('onClientResourceStart', function(ressourceName)
     if(GetCurrentResourceName() ~= ressourceName) then 
@@ -182,8 +183,7 @@ if Config.Coords.enable then
                             if Config.Framework == 'ESX' then
                                 ESX.TriggerServerCallback('inmissionserver', function(cb) 
                                     if cb then
-                                        startmission()
-                                        TriggerServerEvent("phoenix:starttraining")
+                                        openmainmenu()
                                     else 
                                         Config.Notification(Translation[Config.Translation]["someone_already_started"])
                                     end
@@ -191,8 +191,7 @@ if Config.Coords.enable then
                             else 
                                 QBCore.Functions.TriggerCallback('inmissionserver', function(cb) 
                                     if cb then
-                                        startmission()
-                                        TriggerServerEvent("phoenix:starttraining")
+                                        openmainmenu()
                                     else 
                                         Config.Notification(Translation[Config.Translation]["someone_already_started"])
                                     end
@@ -208,274 +207,338 @@ if Config.Coords.enable then
     end)
 end
 
-function startmission()
-    local results1 = Config.Pedname1coords[math.random(#Config.Pedname1coords)]
-    local results2 = Config.Pedname2coords[math.random(#Config.Pedname2coords)]
-    local results3 = Config.Pedname3coords[math.random(#Config.Pedname3coords)]
-    local results4 = Config.Pedname4coords[math.random(#Config.Pedname4coords)]
-    local results5 = Config.Pedname5coords[math.random(#Config.Pedname5coords)]
-    if Config.UseHostagePeds then 
-        resulth1 = Config.Pednamehostage1coords[math.random(#Config.Pednamehostage1coords)]
-        resulth2 = Config.Pednamehostage2coords[math.random(#Config.Pednamehostage2coords)]
-        resulth3 = Config.Pednamehostage3coords[math.random(#Config.Pednamehostage3coords)]
-        hashh1 = GetHashKey(Config.Pednamehostage1)
-        while not HasModelLoaded(hashh1) do
-            RequestModel(hashh1)
-            Wait(20)
+function openmainmenu()
+    lib.registerContext({
+        id = 'mainmenu',
+        title = Translation[Config.Translation]["difficulty"],
+        icon = 'user',
+        options = {
+            {
+                title = Translation[Config.Translation]["choose_difficulty"],
+            },
+            {
+                title = Translation[Config.Translation]["easy"],
+                colorScheme = 'green',
+                icon = 'fa-solid fa-bars',
+                iconColor = 'green',
+                progress = 100,
+                colorScheme = 'green',
+                onSelect = function()
+                    startmission('easy')
+                    TriggerServerEvent("phoenix:starttraining")
+                end 
+            }, 
+            {
+                title = Translation[Config.Translation]["normal"],
+                colorScheme = 'orange', 
+                icon = 'fa-solid fa-bars',
+                iconColor = 'orange',
+                progress = 100,
+                colorScheme = 'orange',
+                onSelect = function()
+                    startmission('normal')
+                    TriggerServerEvent("phoenix:starttraining")
+                end
+            },
+            {
+                title = Translation[Config.Translation]["hard"],
+                colorScheme = 'red',
+                icon = 'fa-solid fa-bars',
+                iconColor = 'red',
+                progress = 100,
+                colorScheme = 'red',
+                onSelect = function()
+                    startmission('hard')
+                    TriggerServerEvent("phoenix:starttraining")
+                end
+            },
+        }
+    })
+    lib.showContext('mainmenu')
+end
+
+local enemies = {}
+local hostages = {}
+
+-- RegisterCommand('delped', function(source, args, RawCommand)
+--     for k,peds in pairs(enemies) do
+--         DeleteEntity(peds)
+--     end    
+-- end)
+
+function startmission(diff)
+    globaldiff = diff
+    if Config.MaxEnemies == nil then
+        for k,v in pairs(Config.Enemies) do
+            RequestModel(GetHashKey(v.ped))
+            while not HasModelLoaded(GetHashKey(v.ped)) do 
+                Citizen.Wait(10)
+            end
+            local random = v.coords[math.random(#v.coords)]
+            local ped = CreatePed(4, GetHashKey(v.ped), random.x, random.y, random.z, random.w, true, false)
+            SetEntityAsMissionEntity(ped, true, true)
+            NetworkRegisterEntityAsNetworked(ped)
+
+            local netID = PedToNet(ped)
+            NetworkSetNetworkIdDynamic(netID, false)
+            SetNetworkIdExistsOnAllMachines(netID, true)
+
+            SetPedCombatMovement(ped, 2 )   
+            GiveWeaponToPed(ped, GetHashKey(Config.Weapon), 2, true, true)
+            SetPedCombatAbility(ped, 100)
+
+            if diff == 'easy' then 
+            elseif diff == 'normal' then 
+                SetPedArmour(ped, 50)
+            elseif diff == 'hard' then 
+                SetPedArmour(ped, 100)
+            end
+
+            if Config.EnableBlip then 
+                local blip = AddBlipForEntity(ped) 
+                SetBlipSprite(blip, 1)
+                SetBlipScale(blip, 0.6)
+                SetBlipColour(blip, 1)
+                SetBlipAsShortRange(blip, true)
+                BeginTextCommandSetBlipName('STRING')
+                AddTextComponentSubstringPlayerName(Translation[Config.Translation]["enemy"])
+            end
+
+            table.insert(enemies, ped)
+        end 
+    else 
+        local maxenemies = 0
+        for k,v in pairs(Config.Enemies) do
+            if maxenemies < Config.MaxEnemies then
+                RequestModel(GetHashKey(v.ped))
+                while not HasModelLoaded(GetHashKey(v.ped)) do 
+                    Citizen.Wait(10)
+                end
+                local random = v.coords[math.random(#v.coords)]
+                local ped = CreatePed(4, GetHashKey(v.ped), random.x, random.y, random.z, random.w, true, false)
+                SetEntityAsMissionEntity(ped, true, true)
+                NetworkRegisterEntityAsNetworked(ped)
+
+                local netID = PedToNet(ped)
+                NetworkSetNetworkIdDynamic(netID, false)
+                SetNetworkIdExistsOnAllMachines(netID, true)
+
+                SetPedCombatMovement(ped, 2 )   
+                GiveWeaponToPed(ped, GetHashKey(Config.Weapon), 2, true, true)
+                SetPedCombatAbility(ped, 100)
+
+                if Config.EnableBlip then 
+                    local blip = AddBlipForEntity(ped) 
+                    SetBlipSprite(blip, 1)
+                    SetBlipScale(blip, 0.6)
+                    SetBlipColour(blip, 1)
+                    SetBlipAsShortRange(blip, true)
+                    BeginTextCommandSetBlipName('STRING')
+                    AddTextComponentSubstringPlayerName(Translation[Config.Translation]["enemy"])
+                    EndTextCommandSetBlipName(blip)
+                end
+                maxenemies = maxenemies + 1
+                table.insert(enemies, ped)
+            else 
+                --("SPAWNED "..tostring(maxenemies).." Enemies")
+            end
+        end 
+    end
+
+    for k,v in pairs(Config.Hostages) do
+        RequestModel(GetHashKey(v.ped))
+        while not HasModelLoaded(GetHashKey(v.ped)) do 
+            Citizen.Wait(10)
         end
-        hashh2 = GetHashKey(Config.Pednamehostage2)
-        while not HasModelLoaded(hashh2) do
-            RequestModel(hashh2)
-            Wait(20)
-        end
-        hashh3 = GetHashKey(Config.Pednamehostage3)
-        while not HasModelLoaded(hashh3) do
-            RequestModel(hashh3)
-            Wait(20)
-        end
-    end
-    local PlayerPed = PlayerPedId()
-    local hash1 = GetHashKey(Config.Pedname1)
-    while not HasModelLoaded(hash1) do
-        RequestModel(hash1)
-        Wait(20)
-    end
-    local hash2 = GetHashKey(Config.Pedname2)
-    while not HasModelLoaded(hash2) do
-        RequestModel(hash2)
-        Wait(20)
-    end
-    local hash3 = GetHashKey(Config.Pedname3)
-    while not HasModelLoaded(hash3) do
-        RequestModel(hash3)
-        Wait(20)
-    end
-    local hash4 = GetHashKey(Config.Pedname4)
-    while not HasModelLoaded(hash4) do
-        RequestModel(hash4)
-        Wait(20)
-    end
-    local hash5 = GetHashKey(Config.Pedname5)
-    while not HasModelLoaded(hash5) do
-        RequestModel(hash5)
-        Wait(20)
-    end
-    if Config.UseHostagePeds then
-        pedh1 = CreatePed(4, hashh1, resulth1.x, resulth1.y, resulth1.z, resulth1.h, true, false)
-        pedh2 = CreatePed(4, hashh2, resulth2.x, resulth2.y, resulth2.z, resulth2.h, true, false)
-        pedh3 = CreatePed(4, hashh3, resulth3.x, resulth3.y, resulth3.z, resulth3.h, true, false)
-        SetBlockingOfNonTemporaryEvents(pedh1, true)
-        SetBlockingOfNonTemporaryEvents(pedh2, true)
-        SetBlockingOfNonTemporaryEvents(pedh3, true)
-    end
-    ped1 = CreatePed(4, hash1, results1.x, results1.y, results1.z, results1.h, true, false)
-    ped2 = CreatePed(4, hash2, results2.x, results2.y, results2.z, results2.h, true, false)
-    ped3 = CreatePed(4, hash3, results3.x, results3.y, results3.z, results3.h, true, false)
-    ped4 = CreatePed(4, hash4, results4.x, results4.y, results4.z, results4.h, true, false)
-    ped5 = CreatePed(4, hash5, results5.x, results5.y, results5.z, results5.h, true, false)
-    SetEntityAsMissionEntity(ped1, true, true)
-    NetworkRegisterEntityAsNetworked(ped1)
-    local netID1 = PedToNet(ped1)
-    NetworkSetNetworkIdDynamic(netID1, false)
-    SetNetworkIdCanMigrate(netID1, true)
-    SetNetworkIdExistsOnAllMachines(netID1, true)
+        local random = v.coords[math.random(#v.coords)]
+        local ped = CreatePed(4, GetHashKey(v.ped), random.x, random.y, random.z - 1.0, random.w, true, false)
+        SetEntityAsMissionEntity(ped, true, true)
+        NetworkRegisterEntityAsNetworked(ped)
+        local netID = PedToNet(ped)
+        NetworkSetNetworkIdDynamic(netID, false)
+        SetNetworkIdExistsOnAllMachines(netID, true)
 
-    SetEntityAsMissionEntity(ped2, true, true)
-    NetworkRegisterEntityAsNetworked(ped2)
-    local netID2 = PedToNet(ped2)
-    NetworkSetNetworkIdDynamic(netID2, false)
-    SetNetworkIdCanMigrate(netID2, true)
-    SetNetworkIdExistsOnAllMachines(netID2, true)
-
-    SetEntityAsMissionEntity(ped3, true, true)
-    NetworkRegisterEntityAsNetworked(ped3)
-    local netID3 = PedToNet(ped3)
-    NetworkSetNetworkIdDynamic(netID3, false)
-    SetNetworkIdCanMigrate(netID3, true)
-    SetNetworkIdExistsOnAllMachines(netID3, true)
-
-    SetEntityAsMissionEntity(ped4, true, true)
-    NetworkRegisterEntityAsNetworked(ped4)
-    local netID4 = PedToNet(ped4)
-    NetworkSetNetworkIdDynamic(netID4, false)
-    SetNetworkIdCanMigrate(netID4, true)
-    SetNetworkIdExistsOnAllMachines(netID4, true)
-
-    SetEntityAsMissionEntity(ped5, true, true)
-    NetworkRegisterEntityAsNetworked(ped5)
-    local netID5 = PedToNet(ped5)
-    NetworkSetNetworkIdDynamic(netID5, false)
-    SetNetworkIdCanMigrate(netID5, true)
-    SetNetworkIdExistsOnAllMachines(netID5, true)
-    if Config.UseHostagePeds then
-        SetEntityAsMissionEntity(pedh1, true, true)
-        NetworkRegisterEntityAsNetworked(pedh1)
-        local netpedh1 = PedToNet(pedh1)
-        NetworkSetNetworkIdDynamic(netpedh1, false)
-        SetNetworkIdCanMigrate(netpedh1, true)
-        SetNetworkIdExistsOnAllMachines(netpedh1, true)
-
-        SetEntityAsMissionEntity(pedh2, true, true)
-        NetworkRegisterEntityAsNetworked(pedh2)
-        local netpedh2 = PedToNet(pedh2)
-        NetworkSetNetworkIdDynamic(netpedh2, false)
-        SetNetworkIdCanMigrate(netpedh2, true)
-        SetNetworkIdExistsOnAllMachines(netpedh2, true)
-
-        SetEntityAsMissionEntity(pedh3, true, true)
-        NetworkRegisterEntityAsNetworked(pedh3)
-        local netpedh3 = PedToNet(pedh3)
-        NetworkSetNetworkIdDynamic(netpedh3, false)
-        SetNetworkIdCanMigrate(netpedh3, true)
-        SetNetworkIdExistsOnAllMachines(netpedh3, true)
+        SetBlockingOfNonTemporaryEvents(ped, true)
+        TaskSetBlockingOfNonTemporaryEvents(ped, true)
+        SetEveryoneIgnorePlayer(ped, true)        
 
         RequestAnimDict("random@arrests@busted")
         while not HasAnimDictLoaded("random@arrests@busted") do 
             Citizen.Wait(25)
         end  
-        TaskPlayAnim(pedh1, 'random@arrests@busted', 'idle_a', 1.0, -1, -1, 3, 0, false, false, false)
-        TaskPlayAnim(pedh2, 'random@arrests@busted', 'idle_a', 1.0, -1, -1, 3, 0, false, false, false)
-        TaskPlayAnim(pedh3, 'random@arrests@busted', 'idle_a', 1.0, -1, -1, 3, 0, false, false, false)
+        TaskPlayAnim(ped, 'random@arrests@busted', 'idle_a', 1.0, -1, -1, 3, 0, false, false, false)
+
+        if Config.EnableBlip then 
+            local blip = AddBlipForEntity(ped) 
+            SetBlipSprite(blip, 1)
+            SetBlipScale(blip, 0.6)
+            SetBlipColour(blip, 2)
+            SetBlipAsShortRange(blip, true)
+            BeginTextCommandSetBlipName('STRING')
+            AddTextComponentSubstringPlayerName(Translation[Config.Translation]["hostage"])
+            EndTextCommandSetBlipName(blip)
+        end
+
+        table.insert(hostages, ped)
     end
-
-    
-
-    weaponhash = GetHashKey(Config.Weapon)
-    SetPedCombatMovement(ped1, 2 )
-    SetPedCombatMovement(ped2, 2 )
-    SetPedCombatMovement(ped3, 2 )
-    SetPedCombatMovement(ped4, 2 )
-    SetPedCombatMovement(ped5, 2 )
-
-    GiveWeaponToPed(ped1, weaponhash, 2, true, true)
-    GiveWeaponToPed(ped2, weaponhash, 2, true, true)
-    GiveWeaponToPed(ped3, weaponhash, 2, true, true)
-    GiveWeaponToPed(ped4, weaponhash, 2, true, true)
-    GiveWeaponToPed(ped5, weaponhash, 2, true, true)
-
-    SetPedCombatAbility(ped1, 100)
-    SetPedCombatAbility(ped2, 100)
-    SetPedCombatAbility(ped3, 100)
-    SetPedCombatAbility(ped4, 100)
-    SetPedCombatAbility(ped5, 100)
-
 
     Config.Notification(Translation[Config.Translation]["started_mission"])
     inmission = true
-    if Config.EnableBlip then 
-        blip1 = AddBlipForEntity(ped1) 
-        SetBlipSprite(blip1, 1)
-        SetBlipScale(blip1, 0.6)
-        SetBlipColour(blip1, 1)
-        SetBlipAsShortRange(blip1, true)
-        BeginTextCommandSetBlipName('STRING')
-        AddTextComponentSubstringPlayerName('Target')
-        EndTextCommandSetBlipName(blip1)
-
-        blip2 = AddBlipForEntity(ped2) 
-        SetBlipSprite(blip2, 1)
-        SetBlipScale(blip2, 0.6)
-        SetBlipColour(blip2, 1)
-        SetBlipAsShortRange(blip2, true)
-        BeginTextCommandSetBlipName('STRING')
-        AddTextComponentSubstringPlayerName('Target')
-        EndTextCommandSetBlipName(blip2)
-
-        blip3 = AddBlipForEntity(ped3) 
-        SetBlipSprite(blip3, 1)
-        SetBlipScale(blip3, 0.6)
-        SetBlipColour(blip3, 1)
-        SetBlipAsShortRange(blip3, true)
-        BeginTextCommandSetBlipName('STRING')
-        AddTextComponentSubstringPlayerName('Target')
-        EndTextCommandSetBlipName(blip3)
-
-        blip4 = AddBlipForEntity(ped4) 
-        SetBlipSprite(blip4, 1)
-        SetBlipScale(blip4, 0.6)
-        SetBlipColour(blip4, 1)
-        SetBlipAsShortRange(blip4, true)
-        BeginTextCommandSetBlipName('STRING')
-        AddTextComponentSubstringPlayerName('Target')
-        EndTextCommandSetBlipName(blip4)
-
-        blip5 = AddBlipForEntity(ped5) 
-        SetBlipSprite(blip5, 1)
-        SetBlipScale(blip5, 0.6)
-        SetBlipColour(blip5, 1)
-        SetBlipAsShortRange(blip5, true)
-        BeginTextCommandSetBlipName('STRING')
-        AddTextComponentSubstringPlayerName('Target')
-        EndTextCommandSetBlipName(blip5)
-    end
 end
 
 Citizen.CreateThread(function()
     while true do
         Citizen.Wait(0)
         if inmission then
-            local playercoords = GetEntityCoords(PlayerPedId())
-            local ped1coords = GetEntityCoords(ped1)
-            local ped2coords = GetEntityCoords(ped2)
-            local ped3coords = GetEntityCoords(ped3)
-            local ped4coords = GetEntityCoords(ped4)
-            local ped5coords = GetEntityCoords(ped5)
-            local distance1 = Vdist(playercoords,ped1coords) 
-            local distance2 = Vdist(playercoords,ped2coords) 
-            local distance3 = Vdist(playercoords,ped3coords) 
-            local distance4 = Vdist(playercoords,ped4coords) 
-            local distance5 = Vdist(playercoords,ped5coords) 
-            if distance1 < Config.DistanceAttack then 
-                TaskCombatPed(ped1, PlayerPedId(), 0, 16)
+            for k,ped in pairs(enemies) do
+                if globaldiff == 'easy' then 
+
+                elseif globaldiff == 'normal' then 
+    
+                elseif globaldiff == 'hard' then 
+                    SetPedSuffersCriticalHits(ped, false)
+                end 
             end
-            if distance2 < Config.DistanceAttack then 
-                TaskCombatPed(ped2, PlayerPedId(), 0, 16)
+        end
+    end
+end)
+
+
+local dead = 0
+
+Citizen.CreateThread(function()
+    while true do
+        Citizen.Wait(0)
+        if inmission then
+            local plcoords = GetEntityCoords(PlayerPedId())
+            for _, ped in pairs(enemies) do
+                
+                local coords = GetEntityCoords(ped)
+                local dist = Vdist(plcoords, coords)
+                if dist < Config.DistanceAttack then 
+                    TaskCombatPed(ped, PlayerPedId(), 0, 16)
+                end
+                if DoesEntityExist(ped) then
+                    if IsPedBeingStunned(ped) or IsEntityDead(ped) then 
+                        DeleteEntity(ped)
+                        dead = dead + 1
+                    end
+                end
+                if rescue == #Config.Hostages then
+                    if dead >= #Config.Enemies then  
+                        --("HOSTAGES DEAD")
+                        inmission = false
+                        --print("ALLE TOT")
+                        endmission(false)
+                    end
+                end
+            end     
+            if Config.UseHostagePeds then   
+                for m, host in pairs(hostages) do    
+                    if IsEntityDead(host) or IsPedBeingStunned(host) then
+                        if inmission then
+                            inmission = false
+                            for k, enem in pairs(enemies) do
+                            DeleteEntity(enem)
+                            end
+                            for s, host in pairs(hostages) do
+                                DeleteEntity(host)
+                            end
+                            endmission(true)
+                        end
+                    end
+                    local hostcoords = GetEntityCoords(host)
+                    local hdist = Vdist(plcoords, hostcoords)
+                    
+                    while not IsEntityPlayingAnim(host, 'random@arrests@busted', 'idle_a', 3) and not iscarry do
+                        Citizen.Wait(5)
+                        TaskPlayAnim(host, 'random@arrests@busted', 'idle_a', 1.0, -1, -1, 3, 0, false, false, false)
+                    end  
+
+                    if rescue < #Config.Hostages then
+                        if hdist < 1 then 
+                            if not iscarry then
+                                DrawText3D(hostcoords.x, hostcoords.y, hostcoords.z, Translation[Config.Translation]["press_take_hostage"])
+                            else 
+                                DrawText3D(hostcoords.x, hostcoords.y, hostcoords.z, Translation[Config.Translation]["press_drop_hostage"])
+                                local rdist = Vdist(plcoords, Config.RescueCoords)
+                                if rdist < 10 then 
+                                    DrawMarker(1, Config.RescueCoords.x, Config.RescueCoords.y, Config.RescueCoords.z - 1.0 , 0.0, 0.0, 0.0, 0.0, 0.0, 3.0, 3.0, 3.0, 0.5, 136, 0, 255, 50, 0, 0, 2, 0, 0, 0, false )
+                                    DrawText3D(Config.RescueCoords.x, Config.RescueCoords.y, Config.RescueCoords.z, Translation[Config.Translation]["rescue"])
+                                end
+                            end
+                            if IsControlJustReleased(0, 38) then 
+                                if not iscarry then 
+                                    iscarry = true
+                                    RequestAnimDict('missfinale_c2mcs_1')
+                                    RequestAnimDict('nm')
+
+                                    while(not HasAnimDictLoaded('missfinale_c2mcs_1')) do
+                                        RequestAnimDict('missfinale_c2mcs_1')
+                                        Citizen.Wait(1)
+                                    end
+                                    while(not HasAnimDictLoaded('missfinale_c2mcs_1')) do
+                                        RequestAnimDict('missfinale_c2mcs_1')
+                                        Citizen.Wait(1)
+                                    end
+                                    
+                                    TaskPlayAnim(PlayerPedId(), "missfinale_c2mcs_1", "fin_c2_mcs_1_camman", 8.0, -8, -1, 49, 0, 0, 40, 0)
+                                    TaskPlayAnim(host, "nm", "firemans_carry", 8.0, -8, -1, 33, 0, 0, 40, 0)
+                                    AttachEntityToEntity(host, PlayerPedId(), 0, 0.27, 0.15, 0.63, 0.5, 0.5, 180, false, false, false, false, 2, false)
+                                    SetEntityInvincible(host, true)
+                                    Config.Notification(Translation[Config.Translation]["take_hostage"])
+                                else 
+                                    iscarry = false
+                                    ClearPedSecondaryTask(PlayerPedId())
+                                    ClearPedSecondaryTask(host)
+                                    SetEntityInvincible(host, false)
+                                    DetachEntity(host, true, false)
+                                    RequestAnimDict("random@arrests@busted")
+                                    while not HasAnimDictLoaded("random@arrests@busted") do 
+                                        Citizen.Wait(25)
+                                    end  
+                                    TaskPlayAnim(host, 'random@arrests@busted', 'idle_a', 1.0, -1, -1, 3, 0, false, false, false)
+
+                                    local detachcoords = GetEntityCoords(host)
+                                    local dist = Vdist(detachcoords, Config.RescueCoords)
+                                    if dist < 3 then 
+                                        rescue = rescue + 1
+                                        --print(json.encode(host))
+                                        table.remove(hostages, m)
+                                        if rescue == #Config.Hostages then 
+                                            Config.Notification(Translation[Config.Translation]["saved_all_hostages"])
+                                            ClearPedTasksImmediately(host)
+                                            TaskSmartFleePed(host, PlayerPedId(), 50.0, -1, false, false)
+                                            Citizen.Wait(1500)
+                                            DeleteEntity(host)
+                                        else 
+                                            Config.Notification(Translation[Config.Translation]["saved_hostage"])
+                                            ClearPedTasksImmediately(host)
+                                            TaskSmartFleePed(host, PlayerPedId(), 50.0, -1, false, false)
+                                            Citizen.Wait(1500)
+                                            DeleteEntity(host)
+
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
             end
-            if distance3 < Config.DistanceAttack then 
-                TaskCombatPed(ped3, PlayerPedId(), 0, 16)
-            end
-            if distance4 < Config.DistanceAttack then 
-                TaskCombatPed(ped4, PlayerPedId(), 0, 16)
-            end
-            if distance5 < Config.DistanceAttack then 
-                TaskCombatPed(ped5, PlayerPedId(), 0, 16)
-            end
-            if IsPedBeingStunned(ped1) or IsEntityDead(ped1) then 
-                DeleteEntity(ped1)
-            end
-            if IsPedBeingStunned(ped2) or IsEntityDead(ped2) then 
-                DeleteEntity(ped2)
-            end
-            if IsPedBeingStunned(ped3) or IsEntityDead(ped3) then 
-                DeleteEntity(ped3)
-            end
-            if IsPedBeingStunned(ped4) or IsEntityDead(ped4) then 
-                DeleteEntity(ped4)
-            end
-            if IsPedBeingStunned(ped5) or IsEntityDead(ped5) then 
-                DeleteEntity(ped5)
-            end
-            if IsPedBeingStunned(PlayerPedId()) then
+            if IsPedBeingStunned(PlayerPedId()) or IsEntityDead(PlayerPedId()) then -- Wenn Spieler verliert
                 Citizen.Wait(200)
                 inmission = false
-                DeleteEntity(ped1)
-                DeleteEntity(ped2)
-                DeleteEntity(ped3)
-                DeleteEntity(ped4)
-                DeleteEntity(ped5)
-                endmission(true)
-            end
-            if IsEntityDead(ped1) and IsEntityDead(ped2) and IsEntityDead(ped3) and IsEntityDead(ped4) and IsEntityDead(ped5) and inmission then 
-                endmission(false)
-            end
-            if Config.UseHostagePeds then
-                if IsEntityDead(pedh1) or IsEntityDead(pedh2) or IsEntityDead(pedh3) then
-                    inmission = false
-                    DeleteEntity(pedh1)
-                    DeleteEntity(pedh2)
-                    DeleteEntity(pedh3)
-                    endmission(true)
+                for k, enem in pairs(enemies) do
+                   DeleteEntity(enem)
                 end
+                for s, host in pairs(hostages) do
+                    DeleteEntity(host)
+                end
+                if Config.TeleportAfterLose then 
+                    SetEntityCoords(PlayerPedId(), Config.TeleportCoords)
+                end
+                endmission(true)
             end
         end
     end
@@ -483,32 +546,33 @@ end)
 
 function endmission(cancel)
     if not cancel then
-        DeleteEntity(ped1)
-        DeleteEntity(ped2)
-        DeleteEntity(ped3)
-        DeleteEntity(ped4)
-        DeleteEntity(ped5)
+        for k, enem in pairs(enemies) do
+            DeleteEntity(enem)
+        end
+        for s, host in pairs(hostages) do
+            DeleteEntity(host)
+        end
+
         inmission = false  
         Config.Notification(Translation[Config.Translation]["mission_success"])
         TriggerServerEvent("phoenix:starttraining")
         TriggerServerEvent("phoenix:getreward")
     else 
-        DeleteEntity(ped1)
-        DeleteEntity(ped2)
-        DeleteEntity(ped3)
-        DeleteEntity(ped4)
-        DeleteEntity(ped5)
+        for k, enem in pairs(enemies) do
+            DeleteEntity(enem)
+        end
+        for s, host in pairs(hostages) do
+            DeleteEntity(host)
+        end
+
         inmission = false
         Config.Notification(Translation[Config.Translation]["mission_failed"])
         TriggerServerEvent("phoenix:starttraining")
     end
-    if Config.EnableBlip then 
-        RemoveBlip(blip1)
-        RemoveBlip(blip2)
-        RemoveBlip(blip3)
-        RemoveBlip(blip4)
-        RemoveBlip(blip5)
-    end
+    dead = 0
+    rescue = 0
+    enemies = {}
+    hostages = {}
 end
 
 function DrawText3D(x, y, z, text)
@@ -534,8 +598,6 @@ if Config.Debug then
     RegisterCommand('cancel', function()
         if inmission then
             endmission(true)
-        else 
-            print("jaja")
         end
     end)
     RegisterCommand('reward', function()
@@ -544,14 +606,10 @@ if Config.Debug then
 end
 
 AddEventHandler('onResourceStop', function()
-    DeleteEntity(ped1)
-    DeleteEntity(ped2)
-    DeleteEntity(ped3)
-    DeleteEntity(ped4)
-    DeleteEntity(ped5)
-    if Config.UseHostagePeds then
-        DeleteEntity(pedh1)
-        DeleteEntity(pedh2)
-        DeleteEntity(pedh3)
+    for k, enem in pairs(enemies) do
+        DeleteEntity(enem)
+    end
+    for s, host in pairs(hostages) do
+        DeleteEntity(host)
     end
 end)
