@@ -107,7 +107,7 @@ Config.Enemies = {
 
 
 Config.UseHostagePeds = true
-Config.RescueCoords = vector3(-2013.9646, 3161.7129, 32.8106)
+Config.RescueCoords = vector3(-2013.9646, 3161.7129, 32.8106) -- Where you need to bring the Hostages (Entrance)
 Config.Hostages = {
     { -- You can create as many Hostages as you want. This is only 1 Hostage at the moment
         ped = 'cs_andreas', 
