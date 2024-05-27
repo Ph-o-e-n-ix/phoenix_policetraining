@@ -15,7 +15,7 @@ Config.Notification = function(text, time)
     --QBCore.Functions.Notify(text, "success", time)
 end
 
-Config.EnableBlip = false -- If you want to enable blips for the Enemies
+Config.EnableBlip = true -- If you want to enable blips for the Enemies
 
 Config.Weapon = "WEAPON_STUNGUN" -- The Weapon for the Peds they have 
 --IMPORTANT!: For the best Experience you also have to do the Training with a Stungun. (Optional)
@@ -47,93 +47,139 @@ Config.requiredJob = { -- You can set a required Job to get only access to speci
     jobname= 'police'
 }
 
-Config.Pedname1 = "s_m_y_armymech_01" -- Setup any Ped you want -> https://wiki.rage.mp/index.php?title=Peds
-Config.Pedname1coords = { -- You can set up more coords. 1 Random coord will be chosen after start, so its not always the same position
-    {x =  -1962.2983,  y = 3197.2800,  z = 38.0401, h = 239.2150},
-    {x = -1977.9225,  y = 3168.1230,  z = 38.2638, h = 55.8916},
-    {x = -1988.3062,  y = 3184.7302,  z = 38.0014, h = 185.6300},
-    {x = -1984.3462,  y = 3216.7783,  z = 38.0014, h = 126.4631},
+Config.MaxEnemies = nil -- set to nil if you want all of the peds otherwise write a number
+Config.Enemies = {
+    { -- This is only 1 Ped. It has other Spots to spawn so it dont always spawn at the same coords
+        ped = 's_m_y_armymech_01', 
+        coords = {
+            vector4(-2009.06, 3176.89, 32.81, 84.53),
+            vector4(-1996.83, 3193.64, 32.81, 58.69),
+            vector4(-1983.65, 3197.5, 32.81, 38.89),
+			vector4(-1992.92, 3214.14, 32.81, 234.31),
+			vector4(-1981.13, 3213.64, 32.81, 69.9),
+			vector4(-1986.35, 3205.05, 32.81, 299.11),
+			vector4(-1976.84, 3200.4, 32.81, 51.42),
+			vector4(-1988.53, 3225.52, 32.81, 190.05),
+			vector4(-2001.63, 3217.87, 32.81, 58.99),
+			vector4(-2005.44, 3210.31, 32.81, 58.99),
+			vector4(-1979.61, 3191.88, 32.81, 193.28),
+			vector4(-1981.8, 3166.52, 32.81, 155.22),
+			vector4(-2000.14, 3199.88, 161.33, 155.22),
+        },
+    },
+    {
+        ped = 's_m_y_armymech_01', 
+        coords = {
+            vector4(-2009.06, 3176.89, 32.81, 84.53),
+            vector4(-1996.83, 3193.64, 32.81, 58.69),
+            vector4(-1983.65, 3197.5, 32.81, 38.89),
+			vector4(-1992.92, 3214.14, 32.81, 234.31),
+			vector4(-1981.13, 3213.64, 32.81, 69.9),
+			vector4(-1986.35, 3205.05, 32.81, 299.11),
+			vector4(-1976.84, 3200.4, 32.81, 51.42),
+			vector4(-1988.53, 3225.52, 32.81, 190.05),
+			vector4(-2001.63, 3217.87, 32.81, 58.99),
+			vector4(-2005.44, 3210.31, 32.81, 58.99),
+			vector4(-1979.61, 3191.88, 32.81, 193.28),
+			vector4(-1981.8, 3166.52, 32.81, 155.22),
+			vector4(-2000.14, 3199.88, 161.33, 155.22),
+        },
+    },
+    {
+        ped = 's_m_y_armymech_01', 
+        coords = {
+            vector4(-2009.06, 3176.89, 32.81, 84.53),
+            vector4(-1996.83, 3193.64, 32.81, 58.69),
+            vector4(-1983.65, 3197.5, 32.81, 38.89),
+			vector4(-1992.92, 3214.14, 32.81, 234.31),
+			vector4(-1981.13, 3213.64, 32.81, 69.9),
+			vector4(-1986.35, 3205.05, 32.81, 299.11),
+			vector4(-1976.84, 3200.4, 32.81, 51.42),
+			vector4(-1988.53, 3225.52, 32.81, 190.05),
+			vector4(-2001.63, 3217.87, 32.81, 58.99),
+			vector4(-2005.44, 3210.31, 32.81, 58.99),
+			vector4(-1979.61, 3191.88, 32.81, 193.28),
+			vector4(-1981.8, 3166.52, 32.81, 155.22),
+			vector4(-2000.14, 3199.88, 161.33, 155.22),
+        },
+    },
 }
-
-Config.Pedname2 = "s_m_y_blackops_03"
-Config.Pedname2coords = { 
-    {x = -1998.6176,  y = 3235.7686,  z = 38.0014, h = 168.8320},
-    {x = -2029.3575,  y = 3195.8103,  z = 38.0017, h = 241.0792},
-    {x = -2001.1733,  y = 3174.6606,  z = 38.0013, h = 326.7062},
-    {x = -2010.1771,  y = 3214.7678,  z = 38.0547, h = 318.5367},
-}
-
-Config.Pedname3 = "a_m_m_eastsa_01"
-Config.Pedname3coords = { 
-    {x = -2012.5645,  y = 3217.1465,  z = 32.8103, h = 217.6776},
-    {x = -1962.2429,  y = 3213.7698,  z = 32.8103, h = 340.4951},
-    {x = -1985.8763,  y = 3205.7654,  z = 32.8103, h = 117.0211},
-    {x = -1998.2723,  y = 3210.8071,  z = 32.8103, h = 332.5581},
-}
-
-Config.Pedname4 = "csb_grove_str_dlr"
-Config.Pedname4coords = {
-    {x = -2031.6343,  y = 3200.8286,  z = 32.8105, h = 184.2043},
-    {x = -2009.9430,  y = 3194.1582,  z = 33.3436, h = 79.2662},
-    {x = -2031.8915,  y = 3188.9685,  z = 32.8106, h = 249.5531},
-    {x = -2036.1180,  y = 3191.5747,  z = 32.8105, h = 146.8275},
-}
-
-Config.Pedname5 = "a_m_y_juggalo_01"
-Config.Pedname5coords = { 
-    {x = -2010.2466,  y = 3231.4116,  z = 38.0014, h = 136.4215},
-    {x = -2007.8856,  y = 3229.8926,  z = 38.0014, h = 132.6785},
-    {x = -1999.0039,  y = 3230.6577,  z = 38.0014, h = 58.2632},
-    {x = -2024.4708,  y = 3206.9324,  z = 38.0013, h = 324.2229},
-}
-
 
 
 Config.UseHostagePeds = true
-
-Config.Pednamehostage1 = "cs_andreas"
-Config.Pednamehostage1coords = {
-    {x = -2010.8058,  y = 3207.6309,  z = 32.8102, h = 150.6501},
-    {x = -2025.8547,  y = 3198.5039,  z = 32.8105, h = 237.8466},
-    {x = -1998.4739,  y = 3214.4351,  z = 32.8103, h = 18.4048},
-    {x = -2004.3707,  y = 3235.8281,  z = 32.8102, h = 128.1694},
+Config.RescueCoords = vector3(-2013.9646, 3161.7129, 32.8106)
+Config.Hostages = {
+    { -- You can create as many Hostages as you want. This is only 1 Hostage at the moment
+        ped = 'cs_andreas', 
+        coords = {
+            vector4(-1971.26, 3201.67, 32.81, 238.25),
+            vector4(-2027.0438, 3194.6499, 32.8106, 238.4872),
+            vector4(-1998.9568, 3216.2544, 37.9121, 148.8237),
+            vector4(-1992.2976, 3181.1311, 38.0014, 51.5147),
+        },
+    },
+    -- { -- Second Hostage
+    --     ped = 'cs_andreas', 
+    --     coords = {
+    --         vector4(-1971.26, 3201.67, 32.81, 238.25),
+    --     },
+    -- },
+    
 }
 
-Config.Pednamehostage2 = "mp_f_boatstaff_01"
-Config.Pednamehostage2coords = { 
-    {x = -1974.7866,  y = 3188.6563,  z = 38.0014, h = 137.4261},
-    {x = -1970.4963,  y = 3207.1379,  z = 38.0401, h = 166.6918},
-    {x = -1985.3978,  y = 3173.3806,  z = 38.0014, h = 170.7296},
-    {x = -1979.7488,  y = 3165.6909,  z = 38.0014, h =81.4993},
-}
 
-Config.Pednamehostage3 = "ig_chrisformage"
-Config.Pednamehostage3coords = { 
-    {x = -2010.9626,  y = 3186.5999,  z = 38.0014, h = 60.5957},
-    {x = -2023.1929,  y = 3209.3369,  z = 38.0014, h = 326.0790},
-    {x = -1996.3296,  y = 3183.9968,  z = 38.0014, h = 34.8396},
-    {x = -1996.7281,  y = 3194.5981,  z = 38.0014, h = 57.2371},
-}
-
+Config.TeleportAfterLose = true -- Get Teleported Back if you loose
+Config.TeleportCoords = vector3(-2010.9874, 3158.9895, 32.8106)
 
 Translation = {
     ['de'] = {
-        ["started_mission"] = 'Das Training hat begonnen',
+        ["started_mission"] = 'Das Training hat begonnen. Erledige alle Täter und rette die Geiseln',
         ["already_started"] = 'Du bist bereits im Training',
         ["not_right_job"]   = 'Du hast nicht den richtigen Job dafür',
         ["mission_failed"]  = 'Training fehlgeschlagen. Die Übung ist Vorbei',
         ["mission_success"] = 'Du hast alle ausgeschaltet. Glückwunsch',
         ["someone_already_started"] = 'Es hat bereits jemand das Training gestartet',
-        ["press_e_to_start"] = 'Drücke ~p~[E] ~w~um das Training zu starten'
+        ["press_e_to_start"] = 'Drücke ~p~[E] ~w~um das Training zu starten',
+        
+
+        ["difficulty"] = 'Schwierigkeitsgrad',
+        ["choose_difficulty"] = 'Wähle einen Schwierigkeitsgrad aus',
+        ["easy"] = 'Einfach',
+        ["normal"] = 'Normal',
+        ["hard"] = 'Schwer',
+        ["enemy"] = 'Gegner',
+        ["hostage"] = 'Geisel',
+
+        ["saved_all_hostages"] = 'Du hast alle Geiseln gerettet.' ,
+        ["saved_hostage"] = 'Du hast eine Geisel gerettet.',
+        ["take_hostage"] = 'Bring die Geisel zum Eingang.',
+        ["press_take_hostage"] = 'Drücke ~g~[E]~s~ um die Geisel zu retten',
+        ["press_drop_hostage"] = 'Drücke ~g~[E]~s~ um die Geisel runterzulassen',
+        ["rescue"] = 'Geiselrettung',
+
     },
     ['en'] = {
-        ["started_mission"] = 'The Training begins. Eleminate all 5 Enemies',
+        ["started_mission"] = 'The Training begins. Eleminate all Enemies and rescue the Hostages',
         ["already_started"] = 'The Training already started',
         ["not_right_job"]   = 'You dont have the right Job',
         ["mission_failed"]  = 'Training failed. Its over',
         ["mission_success"] = 'You eleminated all Enemies. Training passed',
         ["someone_already_started"] = 'Someone already started the Training',
-        ["press_e_to_start"] = 'Press ~p~[E] ~w~to start the Training'
+        ["press_e_to_start"] = 'Press ~p~[E] ~w~to start the Training',
+
+        ["difficulty"] = 'Difficulty',
+        ["choose_difficulty"] = 'Choose a Difficulty',
+        ["easy"] = 'Easy',
+        ["normal"] = 'Normal',
+        ["hard"] = 'Hard',
+        ["enemy"] = 'Enemy',
+        ["hostage"] = 'Hostage',
+
+        ["saved_all_hostages"] = 'You saved all Hostages.' ,
+        ["saved_hostage"] = 'You saved a Hostage.',
+        ["take_hostage"] = 'Take the Hostage to the Entrance.',
+        ["press_take_hostage"] = 'Press ~g~[E]~s~ to carry the Hostage',
+        ["press_drop_hostage"] = 'Press ~g~[E]~s~ to drop the Hostage',
+        ["rescue"] = 'Hostage Rescue',
     },
 }
-
