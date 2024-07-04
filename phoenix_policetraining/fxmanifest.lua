@@ -4,9 +4,12 @@ game 'gta5'
 
 version '1.0' 
 
+lua54 'yes'
+
 shared_scripts{
     '@es_extended/imports.lua', -- Uncomment this if you using QB Core
-    'config.lua'
+	'@ox_lib/init.lua',
+    'config.lua',
 } 
 
 server_scripts {
