@@ -181,13 +181,27 @@ if Config.Coords.enable then
                     if IsControlJustReleased(0, 38) then
                         if not inmission then 
                             if Config.Framework == 'ESX' then
-                                ESX.TriggerServerCallback('inmissionserver', function(cb) 
-                                    if cb then
-                                        openmainmenu()
+                                if Config.requiredJob.enable then 
+                                    if ESX.PlayerData.job.name == Config.requiredJob.jobname then 
+                                        ESX.TriggerServerCallback('inmissionserver', function(cb) 
+                                            if cb then
+                                                openmainmenu()
+                                            else 
+                                                Config.Notification(Translation[Config.Translation]["someone_already_started"])
+                                            end
+                                        end)
                                     else 
-                                        Config.Notification(Translation[Config.Translation]["someone_already_started"])
+                                        Config.Notification(Translation[Config.Translation]["not_right_job"])
                                     end
-                                end)
+                                else
+                                    ESX.TriggerServerCallback('inmissionserver', function(cb) 
+                                        if cb then
+                                            openmainmenu()
+                                        else 
+                                            Config.Notification(Translation[Config.Translation]["someone_already_started"])
+                                        end
+                                    end)
+                                end
                             else 
                                 QBCore.Functions.TriggerCallback('inmissionserver', function(cb) 
                                     if cb then
